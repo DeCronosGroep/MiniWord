@@ -15,6 +15,8 @@ namespace MiniSoftware
     using A = DocumentFormat.OpenXml.Drawing;
     using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
     using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
+    using System.Threading.Tasks;
+    using System.Threading;
 
     public static partial class MiniWord
     {
@@ -25,22 +27,39 @@ namespace MiniSoftware
             using (var ms = new MemoryStream())
             {
                 ms.Write(template, 0, template.Length);
-                ms.Position = 0;
-                using (var docx = WordprocessingDocument.Open(ms, true))
-                {
-                    var hc = docx.MainDocumentPart.HeaderParts.Count();
-                    var fc = docx.MainDocumentPart.FooterParts.Count();
-                    for (int i = 0; i < hc; i++)
-                        docx.MainDocumentPart.HeaderParts.ElementAt(i).Header.Generate(docx, value);
-                    for (int i = 0; i < fc; i++)
-                        docx.MainDocumentPart.FooterParts.ElementAt(i).Footer.Generate(docx, value);
-                    docx.MainDocumentPart.Document.Body.Generate(docx, value);
-                    docx.Save();
-                }
-                bytes = ms.ToArray();
+                bytes = WriteToByte(data, ms);
             }
             stream.Write(bytes, 0, bytes.Length);
         }
+
+        private static async Task SaveAsByTemplateImplAsync(Stream stream, byte[] template, Dictionary<string, object> data,CancellationToken token)
+        {
+            byte[] bytes = null;
+            using (var ms = new MemoryStream())
+            {
+                await ms.WriteAsync(template, 0, template.Length, token);
+                bytes = WriteToByte(data, ms);
+            }
+            await stream.WriteAsync(bytes, 0, bytes.Length,token);
+        }
+
+        private static byte[] WriteToByte(Dictionary<string, object> value, MemoryStream ms)
+        {
+            ms.Position = 0;
+            using (var docx = WordprocessingDocument.Open(ms, true))
+            {
+                var hc = docx.MainDocumentPart.HeaderParts.Count();
+                var fc = docx.MainDocumentPart.FooterParts.Count();
+                for (int i = 0; i < hc; i++)
+                    docx.MainDocumentPart.HeaderParts.ElementAt(i).Header.Generate(docx, value);
+                for (int i = 0; i < fc; i++)
+                    docx.MainDocumentPart.FooterParts.ElementAt(i).Footer.Generate(docx, value);
+                docx.MainDocumentPart.Document.Body.Generate(docx, value);
+                docx.Save();
+            }
+            return ms.ToArray();
+        }
+
         private static void Generate(this OpenXmlElement xmlElement, WordprocessingDocument docx, Dictionary<string, object> tags)
         {
             // avoid {{tag}} like <t>{</t><t>{</t> 
@@ -53,14 +72,14 @@ namespace MiniSoftware
             {
                 foreach (var table in tables)
                 {
-                    var trs = table.Descendants<TableRow>().ToArray(); // remember toarray or system will loop OOM;
+                    var trs = table.Descendants<TableRow>().ToArray(); // remember toarray otherwise system will loop OOM;
 
                     foreach (var tr in trs)
                     {
                         var innerText = tr.InnerText.Replace("{{foreach", "").Replace("endforeach}}", "")
                             .Replace("{{if(", "").Replace(")if", "").Replace("endif}}", "");
-                        var matchs = (Regex.Matches(innerText, "(?<={{).*?\\..*?(?=}})")
-                            .Cast<Match>().GroupBy(x => x.Value).Select(varGroup => varGroup.First().Value)).ToArray();
+                        var matchs = Regex.Matches(innerText, "(?<={{).*?\\..*?(?=}})")
+                            .Cast<Match>().GroupBy(x => x.Value).Select(varGroup => varGroup.First().Value).ToArray();
                         if (matchs.Length > 0)
                         {
                             var listKeys = matchs.Select(s => s.Split('.')[0]).Distinct().ToArray();
@@ -76,19 +95,21 @@ namespace MiniSoftware
 
                                 foreach (Dictionary<string, object> es in list)
                                 {
-                                    var dic = new Dictionary<string, object>(); //TODO: optimize
-
+                                    var dic = es.ToDictionary(e => $"{listKey}.{e.Key}", e => e.Value);
                                     var newTr = tr.CloneNode(true);
-                                    foreach (var e in es)
-                                    {
-                                        var dicKey = $"{listKey}.{e.Key}";
-                                        dic.Add(dicKey, e.Value);
-                                    }
-                                    
                                     ReplaceStatements(newTr, tags: dic);
                                     
                                     ReplaceText(newTr, docx, tags: dic);
-                                    table.Append(newTr);
+                                    //Fix #47 The table should be inserted at the template tag position instead of the last row
+                                    if (table.Contains(tr))
+                                    {
+                                        table.InsertBefore(newTr, tr);
+                                    }
+                                    else
+                                    {
+                                        // If it is a nested table, temporarily append it to the end according to the original plan.
+                                        table.Append(newTr);
+                                    }
                                 }
                                 tr.Remove();
                             }
@@ -347,8 +368,7 @@ namespace MiniSoftware
                             {
                                 if (forTags.Any(forTag => forTag.Value.Keys.Any(dictKey =>
                                     {
-                                        var innerTag = "{{" + tag.Key + "." + dictKey + "}}";
-                                        return t.Text.Contains(innerTag);
+                                        return t.Text.Contains($@"{{{{{tag.Key}.{dictKey}}}}}");
                                     })))
                                 {
                                     isMatch = true;
@@ -465,16 +485,16 @@ namespace MiniSoftware
                                 }
                             }
                         }
-                        
+
                         t.Text = EvaluateIfStatement(t.Text);
-                        
+
                         // add breakline
                         {
                             var newText = t.Text;
-                            var splits = Regex.Split(newText, "(<[a-zA-Z/].*?>|\n)");
+                            var splits = Regex.Split(newText, "(<[a-zA-Z/].*?>|\n|\r\n)").Where(o => o != "\n" && o != "\r\n");
                             var currentT = t;
                             var isFirst = true;
-                            if (splits.Length > 1)
+                            if (splits.Count() > 1)
                             {
                                 foreach (var v in splits)
                                 {
@@ -688,6 +708,16 @@ namespace MiniSoftware
             using (var ms = new MemoryStream())
             {
                 st.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        private static async Task<byte[]> GetByteAsync(string path)
+        {
+            using (var st = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 4096, true))
+            using (var ms = new MemoryStream())
+            {
+                await st.CopyToAsync(ms);
                 return ms.ToArray();
             }
         }

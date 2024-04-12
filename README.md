@@ -110,11 +110,11 @@ MiniWord.SaveAsByTemplate(path, templatePath, value);
 
 ##### Template
 
-![image](C:\Users\Wei\Downloads\190647953-6f9da393-e666-4658-a56d-b3a7f13c0ea1.png)
+![image](https://user-images.githubusercontent.com/12729184/190647953-6f9da393-e666-4658-a56d-b3a7f13c0ea1.png)
 
 ##### Result
 
-![image](C:\Users\Wei\Downloads\190648179-30258d82-723d-4266-b711-43f132d1842d.png)
+![image](https://user-images.githubusercontent.com/12729184/190648179-30258d82-723d-4266-b711-43f132d1842d.png)
 
 ### List
 
@@ -133,11 +133,11 @@ MiniWord.SaveAsByTemplate(path, templatePath, value);
 
 Template
 
-![image](C:\Users\Wei\Downloads\190645513-230c54f3-d38f-47af-b844-0c8c1eff2f52.png)
+![image](https://user-images.githubusercontent.com/12729184/190645513-230c54f3-d38f-47af-b844-0c8c1eff2f52.png)
 
 ##### Result
 
-![image](C:\Users\Wei\Downloads\190645704-1f6405e9-71e3-45b9-aa99-2ba52e5e1519.png)
+![image](https://user-images.githubusercontent.com/12729184/190645704-1f6405e9-71e3-45b9-aa99-2ba52e5e1519.png)
 
 ### Table
 
@@ -171,12 +171,12 @@ MiniWord.SaveAsByTemplate(path, templatePath, value);
 
 ##### Template
 
-![image](C:\Users\Wei\Downloads\190843632-05bb6459-f1c1-4bdc-a79b-54889afdfeea.png)
+![image](https://user-images.githubusercontent.com/12729184/190843632-05bb6459-f1c1-4bdc-a79b-54889afdfeea.png)
 
 
 ##### Result
 
-![image](C:\Users\Wei\Downloads\190843663-c00baf16-21f2-4579-9d08-996a2c8c549b.png)
+![image](https://user-images.githubusercontent.com/12729184/190843663-c00baf16-21f2-4579-9d08-996a2c8c549b.png)
 
 ### List inside list
 
@@ -473,6 +473,3 @@ public class ApiController : Controller
 
 
 ## Support : [Donate Link](https://miniexcel.github.io/)
-
-
-
