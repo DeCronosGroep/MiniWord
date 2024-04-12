@@ -11,7 +11,7 @@
 		<Description>.NET Word(docx) exporting template engine without COM+ and interop (support Linux and Mac)
 		</Description>
 		<Authors>LIN,WEI-HAN, eynarhaji</Authors>
-		<PackageId>CronosCore.MiniWord</PackageId>
+		<PackageId>CronosCore.$(AssemblyName)</PackageId>
 		<Copyright>LIN,WEI-HAN, 2022 onwards</Copyright>
 		<NeutralLanguage>en</NeutralLanguage>
 		<license>https://raw.githubusercontent.com/mini-software/MiniWord/main/LICENSE</license>
