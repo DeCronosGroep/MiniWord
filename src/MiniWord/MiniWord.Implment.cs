@@ -499,10 +499,10 @@ namespace MiniSoftware
         {
             var paragraphs = xmlElement.Descendants<Paragraph>().ToList();
 
-            while (paragraphs.Any(s => s.InnerText.Contains("@if")))
+            while (paragraphs.Any(s => s.InnerText.TrimStart().StartsWith("@if ")))
             {
-                var ifIndex = paragraphs.FindIndex(0, s => s.InnerText.Contains("@if"));
-                var endIfFinalIndex = paragraphs.FindIndex(ifIndex, s => s.InnerText.Contains("@endif"));
+                var ifIndex = paragraphs.FindIndex(0, s => s.InnerText.TrimStart().StartsWith("@if "));
+                var endIfFinalIndex = paragraphs.FindIndex(ifIndex, s => s.InnerText.TrimStart().StartsWith("@endif"));
 
                 var statement = paragraphs[ifIndex].InnerText.Split(' ');
 
