@@ -39,6 +39,7 @@ Fix a crash when generating Word documents from templates where tag values conta
 ### Milestone 1: Fix directive detection
 - [x] Update `Contains("@if")` to `TrimStart().StartsWith("@if ")`
 - [x] Update `Contains("@endif")` to `TrimStart().StartsWith("@endif")`
+- [x] Use `StringComparison.Ordinal` for `@if` and an exact `Trim() == "@endif"` match (review feedback)
 
 ### Milestone 2: Regression tests and release (review feedback, PR #5)
 - [x] Add regression tests for `@if` emails in foreach rows and for directive evaluation

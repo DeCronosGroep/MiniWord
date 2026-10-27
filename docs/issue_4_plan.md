@@ -42,6 +42,7 @@ The `@if` / `@endif` directives are paragraph-level constructs. A paragraph whos
 ### Phase 1: Fix directive detection
 1. Change `Contains("@if")` to `TrimStart().StartsWith("@if ")` for the `@if` directive check
 2. Change `Contains("@endif")` to `TrimStart().StartsWith("@endif")` for the `@endif` directive check
+3. Use `StartsWith("@if ", StringComparison.Ordinal)` and an exact `Trim() == "@endif"` match (review feedback, PR #5)
 
 ### Phase 2: Regression tests and release (review feedback, PR #5)
 1. Add regression tests in `tests/MiniWordTests/IssueTests.cs` (`TestIfSubstringInForeachEmail`, `TestIfInEmail` with sample template `samples/docx/TestIfInEmail.docx`)
