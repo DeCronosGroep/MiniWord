@@ -43,13 +43,19 @@ The `@if` / `@endif` directives are paragraph-level constructs. A paragraph whos
 1. Change `Contains("@if")` to `TrimStart().StartsWith("@if ")` for the `@if` directive check
 2. Change `Contains("@endif")` to `TrimStart().StartsWith("@endif")` for the `@endif` directive check
 
+### Phase 2: Regression tests and release (review feedback, PR #5)
+1. Add regression tests in `tests/MiniWordTests/IssueTests.cs` (`TestIfSubstringInForeachEmail`, `TestIfInEmail` with sample template `samples/docx/TestIfInEmail.docx`)
+2. Bump package `Version` to `0.7.2` in `src/MiniWord/MiniWord.csproj` so consumers can pick up the fix
+
 ---
 
 ## Test Scenarios
 
+> Note: `Generate` runs `ReplaceStatements` before `ReplaceText`, so plain `{{tag}}` values are not yet substituted when directives are detected. The crash only occurs for values in **foreach table rows** (filled before the body-level `ReplaceStatements`) or for literal `@if` text in the template.
+
 ### Scenario 1: Email with @if does not crash
-- **Given**: A template with a tag `{{email}}`
-- **When**: The tag value is `user@ifsomething.com`
+- **Given**: A template with a foreach table row (`TestForeachInTablesDemo.docx`)
+- **When**: A row value is `jan@ifirma.be`
 - **Then**: The document is generated without error, with the email rendered as-is
 
 ### Scenario 2: Actual @if directives still work
@@ -63,6 +69,7 @@ The `@if` / `@endif` directives are paragraph-level constructs. A paragraph whos
 
 - [x] Email addresses containing `@if` no longer cause `IndexOutOfRangeException`
 - [x] `@if` / `@endif` conditional directives continue to function correctly
+- [x] Both scenarios covered by automated regression tests
 
 ---
 

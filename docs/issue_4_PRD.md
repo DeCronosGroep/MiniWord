@@ -4,7 +4,7 @@
 **Title**: Fix email ...@if... bug
 **Status**: Complete
 **Created**: 2026-03-09
-**Last Updated**: 2026-03-09
+**Last Updated**: 2026-10-27
 
 ---
 
@@ -39,6 +39,10 @@ Fix a crash when generating Word documents from templates where tag values conta
 ### Milestone 1: Fix directive detection
 - [x] Update `Contains("@if")` to `TrimStart().StartsWith("@if ")`
 - [x] Update `Contains("@endif")` to `TrimStart().StartsWith("@endif")`
+
+### Milestone 2: Regression tests and release (review feedback, PR #5)
+- [x] Add regression tests for `@if` emails in foreach rows and for directive evaluation
+- [x] Bump package version to `0.7.2`
 
 ---
 
