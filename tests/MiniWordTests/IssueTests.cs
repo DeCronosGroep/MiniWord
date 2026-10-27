@@ -809,6 +809,67 @@ ever since the 1500s, when an unknown printer took.
             MiniWord.SaveAsByTemplate(path, templatePath, value);
         }
 
+        /// <summary>
+        /// [Fix email ...@if... bug · Issue #4 · DeCronosGroep/MiniWord](https://github.com/DeCronosGroep/MiniWord/issues/4)
+        /// Foreach rows are filled before ReplaceStatements runs, so an email containing "@if" was parsed as a directive.
+        /// </summary>
+        [Theory]
+        [InlineData("TestForeachInTablesDemo.docx")]
+        [InlineData("TestForeachInTablesWithIfStatementDemo.docx")]
+        public void TestIfSubstringInForeachEmail(string template)
+        {
+            var path = PathHelper.GetTempFilePath();
+            var templatePath = PathHelper.GetFile(template);
+            Dictionary<string, object> value = new()
+            {
+                ["TripHs"] = new List<Dictionary<string, object>> { CreateTripRow("Mail jan@ifirma.be"), CreateTripRow("info@if.be") }
+            };
+            MiniWord.SaveAsByTemplate(path, templatePath, value);
+            var xml = Helpers.GetZipFileContent(path, "word/document.xml");
+            
+            Assert.Contains("Mail jan@ifirma.be", xml);
+            Assert.Contains("info@if.be", xml);
+        }
+
+        /// <summary>
+        /// [Fix email ...@if... bug · Issue #4 · DeCronosGroep/MiniWord](https://github.com/DeCronosGroep/MiniWord/issues/4)
+        /// Literal template text containing "@if" must be kept as-is, real @if/@endif directives must still be
+        /// evaluated, and an "@endif" substring inside a block must not close it early.
+        /// </summary>
+        [Fact]
+        public void TestIfInEmail()
+        {
+            var path = PathHelper.GetTempFilePath();
+            var templatePath = PathHelper.GetFile("TestIfInEmail.docx");
+            Dictionary<string, object> value = new()
+            {
+                ["Points"] = 123,
+                ["Users"] = new List<Dictionary<string, object>>
+                {
+                    new() { ["Name"] = "Jan", ["Email"] = "jan@ifirma.be", ["Role"] = "admin" },
+                    new() { ["Name"] = "Els", ["Email"] = "els@ifco.be", ["Role"] = "user" },
+                }
+            };
+            MiniWord.SaveAsByTemplate(path, templatePath, value);
+            var xml = Helpers.GetZipFileContent(path, "word/document.xml");
+            
+            Assert.Contains("Jan is admin", xml);
+            Assert.DoesNotContain("Els is admin", xml);
+            Assert.Contains("Shown when true", xml);
+            Assert.DoesNotContain("Hidden when false", xml);
+        }
+
+        private static Dictionary<string, object> CreateTripRow(string how) => new()
+        {
+            ["sDate"] = DateTime.Parse("2022-09-08 08:30:00"),
+            ["eDate"] = DateTime.Parse("2022-09-08 15:00:00"),
+            ["How"] = how,
+            ["Details"] = new List<MiniWordForeach>
+            {
+                new() { Value = new Dictionary<string, object> { ["Text"] = "Air", ["Value"] = "Airplane" }, Separator = "" }
+            }
+        };
+
 
         #region Model:TestIssue18.docx
         public class Foo
