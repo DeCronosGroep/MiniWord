@@ -42,7 +42,7 @@ The `@if` / `@endif` directives are paragraph-level constructs. A paragraph whos
 ### Phase 1: Fix directive detection
 1. Change `Contains("@if")` to `TrimStart().StartsWith("@if ")` for the `@if` directive check
 2. Change `Contains("@endif")` to `TrimStart().StartsWith("@endif")` for the `@endif` directive check
-3. Use `StartsWith("@if ", StringComparison.Ordinal)` and `TrimStart().StartsWith("@endif", StringComparison.Ordinal)` (review feedback, PR #5). An exact `Trim() == "@endif"` match was tried and reverted: it breaks closing paragraphs like `@endif.` that work in 0.7.1
+3. Replace the prefix matches with `IsIfStatement` (2 or 4 words, known tag) and `IsEndIfStatement` (`@endif` not followed by a letter or digit) (review feedback, PR #5). An exact `Trim() == "@endif"` match and a `StartsWith` match were tried and dropped: they break templates like `@endif.`, `End @endif` and `@if: Points > 100` that work in 0.7.1
 
 ### Phase 2: Regression tests and release (review feedback, PR #5)
 1. Add regression tests in `tests/MiniWordTests/IssueTests.cs` (`TestIfSubstringInForeachEmail`, `TestIfInEmail` with sample template `samples/docx/TestIfInEmail.docx`)

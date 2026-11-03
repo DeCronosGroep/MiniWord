@@ -859,6 +859,8 @@ ever since the 1500s, when an unknown printer took.
             Assert.DoesNotContain("Els is admin", xml);
             Assert.Contains("Shown when true", xml);
             Assert.DoesNotContain("Hidden when false", xml);
+            Assert.DoesNotContain("Colon hidden", xml);
+            Assert.DoesNotContain("Prefix hidden", xml);
         }
 
         private static Dictionary<string, object> CreateTripRow(string how) => new()
