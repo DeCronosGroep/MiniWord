@@ -853,6 +853,8 @@ ever since the 1500s, when an unknown printer took.
             MiniWord.SaveAsByTemplate(path, templatePath, value);
             var xml = Helpers.GetZipFileContent(path, "word/document.xml");
             
+            Assert.Contains("@ifirma.be is our domain", xml);
+            Assert.Contains("jan@ifirma.be", xml);
             Assert.Contains("Jan is admin", xml);
             Assert.DoesNotContain("Els is admin", xml);
             Assert.Contains("Shown when true", xml);

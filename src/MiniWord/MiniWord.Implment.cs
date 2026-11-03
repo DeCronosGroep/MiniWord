@@ -502,7 +502,7 @@ namespace MiniSoftware
             while (paragraphs.Any(s => s.InnerText.TrimStart().StartsWith("@if ", StringComparison.Ordinal)))
             {
                 var ifIndex = paragraphs.FindIndex(0, s => s.InnerText.TrimStart().StartsWith("@if ", StringComparison.Ordinal));
-                var endIfFinalIndex = paragraphs.FindIndex(ifIndex, s => s.InnerText.Trim() == "@endif");
+                var endIfFinalIndex = paragraphs.FindIndex(ifIndex, s => s.InnerText.TrimStart().StartsWith("@endif", StringComparison.Ordinal));
 
                 var statement = paragraphs[ifIndex].InnerText.Split(' ');
 
