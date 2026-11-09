@@ -844,6 +844,7 @@ ever since the 1500s, when an unknown printer took.
             Dictionary<string, object> value = new()
             {
                 ["Points"] = 123,
+                ["VIP"] = true,
                 ["Users"] = new List<Dictionary<string, object>>
                 {
                     new() { ["Name"] = "Jan", ["Email"] = "jan@ifirma.be", ["Role"] = "admin" },
@@ -861,6 +862,7 @@ ever since the 1500s, when an unknown printer took.
             Assert.DoesNotContain("Hidden when false", xml);
             Assert.DoesNotContain("Colon hidden", xml);
             Assert.DoesNotContain("Prefix hidden", xml);
+            Assert.DoesNotContain("Bool hidden", xml);
         }
 
         private static Dictionary<string, object> CreateTripRow(string how) => new()

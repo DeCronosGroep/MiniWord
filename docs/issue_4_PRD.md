@@ -37,9 +37,9 @@ Fix a crash when generating Word documents from templates where tag values conta
 ## Timeline & Milestones
 
 ### Milestone 1: Fix directive detection
-- [x] `@if`: only a paragraph shaped `@if tag` or `@if tag operator value` with a known tag is a directive (`IsIfStatement`)
-- [x] `@endif`: matches `@endif` not followed by a letter or digit (`IsEndIfStatement`), so `jan@endifco.be` does not close a block
-- [x] Every template that works in 0.7.1 gives the same output (review feedback: `@endif.`, `End @endif`, `(@endif)`, `@if: …`, `x@if …`)
+- [x] `@if`: a paragraph is a directive only when 0.7.1 could evaluate it: `@if tag operator value`, or any other word count with a known boolean tag (`IsIfStatement`)
+- [x] `@endif`: matches `@endif` not followed by a letter, digit or underscore (`IsEndIfStatement`), so `jan@endifco.be` does not close a block
+- [x] Templates that work in 0.7.1 give the same output (review feedback: `@endif.`, `End @endif`, `(@endif)`, `@if: …`, `x@if …`, `@if VIP ` with a trailing space). Exception: a block whose only closing paragraph is `@endif` directly followed by a letter, digit or underscore (e.g. `@endifX`) no longer closes
 
 ### Milestone 2: Regression tests and release (review feedback, PR #5)
 - [x] Add regression tests for `@if` emails in foreach rows and for directive evaluation
@@ -55,7 +55,7 @@ _None — implementation is complete._
 
 ## Technical Notes (Issue-Specific)
 
-The `@if` directive is a paragraph-level construct. Matching on the statement shape (2 or 4 words, known tag) instead of a substring ensures only actual directives match, not data values like email addresses, while every directive that worked in 0.7.1 still matches. A prefix match (`StartsWith`) was tried and dropped: it breaks templates like `End @endif` and `@if: Points > 100` that work in 0.7.1.
+The `@if` directive is a paragraph-level construct. Matching on the statement shape 0.7.1 could evaluate (4 words, or a known boolean tag) instead of a substring ensures only actual directives match, not data values like email addresses, while directives that worked in 0.7.1 still match. A prefix match (`StartsWith`) was tried and dropped: it breaks templates like `End @endif` and `@if: Points > 100` that work in 0.7.1.
 
 ---
 

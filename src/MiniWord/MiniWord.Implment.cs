@@ -525,8 +525,8 @@ namespace MiniSoftware
             }
         }
 
-        // An @if statement has the form "@if tag" or "@if tag operator value", so text that merely
-        // contains "@if" (e.g. an email address like jan@ifirma.be) is not treated as a directive.
+        // An @if statement is "@if tag operator value", or any other word count with a boolean tag, so text
+        // that merely contains "@if" (e.g. an email address like jan@ifirma.be) is not treated as a directive.
         private static bool IsIfStatement(Paragraph paragraph, Dictionary<string, object> tags)
         {
             var text = paragraph.InnerText;
@@ -534,11 +534,12 @@ namespace MiniSoftware
                 return false;
 
             var statement = text.Split(' ');
-            return (statement.Length == 2 || statement.Length == 4) && tags.ContainsKey(statement[1]);
+            return statement.Length >= 2 && tags.TryGetValue(statement[1], out var tagValue)
+                && (statement.Length == 4 || bool.TryParse((tagValue ?? "NULL").ToString(), out _));
         }
 
-        // "@endif" must not be followed by a letter or digit, so an email address like jan@endifco.be
-        // does not close the block.
+        // "@endif" must not be followed by a letter, digit or underscore, so an email address like
+        // jan@endifco.be does not close the block.
         private static bool IsEndIfStatement(Paragraph paragraph)
         {
             return Regex.IsMatch(paragraph.InnerText, "@endif(?![A-Za-z0-9_])");
