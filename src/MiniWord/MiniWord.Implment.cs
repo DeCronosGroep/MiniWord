@@ -499,10 +499,10 @@ namespace MiniSoftware
         {
             var paragraphs = xmlElement.Descendants<Paragraph>().ToList();
 
-            while (paragraphs.Any(s => s.InnerText.Contains("@if")))
+            while (paragraphs.Any(s => IsIfStatement(s, tags)))
             {
-                var ifIndex = paragraphs.FindIndex(0, s => s.InnerText.Contains("@if"));
-                var endIfFinalIndex = paragraphs.FindIndex(ifIndex, s => s.InnerText.Contains("@endif"));
+                var ifIndex = paragraphs.FindIndex(0, s => IsIfStatement(s, tags));
+                var endIfFinalIndex = paragraphs.FindIndex(ifIndex, IsEndIfStatement);
 
                 var statement = paragraphs[ifIndex].InnerText.Split(' ');
 
@@ -523,6 +523,26 @@ namespace MiniSoftware
 
                 paragraphs = xmlElement.Descendants<Paragraph>().ToList();
             }
+        }
+
+        // An @if statement is "@if tag operator value", or any other word count with a boolean tag, so text
+        // that merely contains "@if" (e.g. an email address like jan@ifirma.be) is not treated as a directive.
+        private static bool IsIfStatement(Paragraph paragraph, Dictionary<string, object> tags)
+        {
+            var text = paragraph.InnerText;
+            if (!text.Contains("@if"))
+                return false;
+
+            var statement = text.Split(' ');
+            return statement.Length >= 2 && tags.TryGetValue(statement[1], out var tagValue)
+                && (statement.Length == 4 || bool.TryParse((tagValue ?? "NULL").ToString(), out _));
+        }
+
+        // "@endif" must not be followed by a letter, digit or underscore, so an email address like
+        // jan@endifco.be does not close the block.
+        private static bool IsEndIfStatement(Paragraph paragraph)
+        {
+            return Regex.IsMatch(paragraph.InnerText, "@endif(?![A-Za-z0-9_])");
         }
 
         private static string EvaluateIfStatement(string text)
