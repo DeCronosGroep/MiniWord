@@ -22,6 +22,9 @@
 
 ---
 
+### 0.7.3
+- [Bug] An `@if` without a matching `@endif` now throws an `InvalidOperationException` that names the `@if` line, instead of an `ArgumentOutOfRangeException`
+
 ### 0.7.1
 - [New] Add support to if statement inside foreach statement inside templates. Please refer to samples. (via @eynarhaji)
 - [New] Change tags for if statements for single paragraph if statement {{if and endif}} inside templates. Please refer to samples. (via @eynarhaji)
