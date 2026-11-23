@@ -504,6 +504,9 @@ namespace MiniSoftware
                 var ifIndex = paragraphs.FindIndex(0, s => IsIfStatement(s, tags));
                 var endIfFinalIndex = paragraphs.FindIndex(ifIndex, IsEndIfStatement);
 
+                if (endIfFinalIndex is -1)
+                    throw new InvalidOperationException($"\"{paragraphs[ifIndex].InnerText.Trim()}\" has no matching @endif");
+
                 var statement = paragraphs[ifIndex].InnerText.Split(' ');
 
                 var tagValue = tags[statement[1]] ?? "NULL";

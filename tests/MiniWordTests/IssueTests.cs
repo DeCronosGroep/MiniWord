@@ -3,6 +3,9 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using System.Dynamic;
+using System.IO;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace MiniWordTests
@@ -863,6 +866,26 @@ ever since the 1500s, when an unknown printer took.
             Assert.DoesNotContain("Colon hidden", xml);
             Assert.DoesNotContain("Prefix hidden", xml);
             Assert.DoesNotContain("Bool hidden", xml);
+        }
+
+        [Fact]
+        public void TestIfWithoutEndIf()
+        {
+            var path = PathHelper.GetTempFilePath();
+            Dictionary<string, object> value = new() { ["VIP"] = true };
+            byte[] template;
+
+            using (var ms = new MemoryStream())
+            {
+                using (var docx = WordprocessingDocument.Create(ms, WordprocessingDocumentType.Document))
+                    docx.AddMainDocumentPart().Document = new Document(new Body(
+                        new Paragraph(new Run(new Text("@if VIP "))),
+                        new Paragraph(new Run(new Text("Never closed")))));
+                template = ms.ToArray();
+            }
+
+            var exception = Assert.Throws<InvalidOperationException>(() => MiniWord.SaveAsByTemplate(path, template, value));
+            Assert.Equal("\"@if VIP\" has no matching @endif", exception.Message);
         }
 
         private static Dictionary<string, object> CreateTripRow(string how) => new()
